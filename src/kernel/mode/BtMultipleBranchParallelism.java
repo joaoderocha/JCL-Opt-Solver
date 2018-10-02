@@ -17,21 +17,24 @@ import user.load_input.LoadInterface;
 import user.lower_upper_calculus.UpperLowerCalculusInterface;
 
 
-public class BtMultipleBranchParallelism {
-	
-	public static void main(String[] args) {
-		new BtMultipleBranchParallelism();
-	}
+public class BtMultipleBranchParallelism implements KernelMode{
 	
 	public BtMultipleBranchParallelism(){
 		
+	}
+	
+	public void execute(){
+		/*
+		 * Load input
+		 */
 		long time = System.nanoTime();
-		
-				
 		LoadInterface mountDistances = (LoadInterface)LoadClass.loadInstance("load");
 		mountDistances.load("input.txt");
 		System.out.println("Finished to mount the edges weights of a graph...");
-
+		/*
+		 * pre calculus
+		 */
+		System.out.println("Starting calculating lower/upper bounds...");
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
 		UpperLowerCalculusInterface upperLowerCalculus = (UpperLowerCalculusInterface)LoadClass.loadInstance("upperlower");
 		upperLowerCalculus.execute();
@@ -47,7 +50,7 @@ public class BtMultipleBranchParallelism {
 		String[] nickName = LoadClass.loadString("searchstrategy").split("\\.");
 		jcl.register(LoadClass.loadClass("searchstrategy"), nickName[nickName.length-1]);
 		String[] pruning = LoadClass.loadString("pruning").split(";");
-				
+		System.out.println("Distributing arguments...");
 		traverse(vertices, pruning, tickets, nickName, jcl);	
 		
 		tickets = null;
@@ -86,7 +89,7 @@ public class BtMultipleBranchParallelism {
 		Set<String> restrictions = new HashSet<String>();		
 		String edge = LoadClass.loadString("edgecalculus");
 		String jclVars = LoadClass.loadString("vars");
-				
+		System.out.println("Executing method...");
 		for(String i:vertices){
 			
 			for(String j:vertices){ 
