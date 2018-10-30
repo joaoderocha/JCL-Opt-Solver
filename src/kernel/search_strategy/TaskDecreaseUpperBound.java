@@ -46,7 +46,7 @@ public class TaskDecreaseUpperBound {
 		
 		EdgeCalculusInterface edgeCalc = (EdgeCalculusInterface) loadInstance(edge);
 		
-		traverse(jclLambari, instances, JCLvars, edgeCalc, vertices.size(), remaining, sb, ith, jth, jth, 0);
+		traverse2(jclLambari, instances, JCLvars, edgeCalc, vertices.size(), remaining, sb, ith, jth, jth, 0);
 		
 		sb=null;	
 		
@@ -149,6 +149,69 @@ public class TaskDecreaseUpperBound {
 		}		
 		
 	}	
-	
-
+	protected void traverse2(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, EdgeCalculusInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance)
+	{
+		if(!remaining.isEmpty()) {
+			
+			for(String i:remaining) {
+				
+				float Datual = distance + edgeCalc.calculate(current, i, JCLvars);
+				float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
+				boolean flag = true;
+				ObjectSet<String> remainingAux = new ObjectOpenHashSet<String>(remaining.size()-1);
+				for(String j:remaining){
+					if(!j.equals(i)){
+						remainingAux.add(j);
+					}	
+				}
+				Object[] args = {JCLvars, numOfVertices, remainingAux, path, root, leaf, current, i, Datual, upperBound, edgeCalc};
+				for(PruningInterface x : instances) {
+					if(x!=null && flag) {
+						if(x.prune(args)) {
+							
+							flag = false;
+							remainingAux.clear();
+							remainingAux = null;
+						}
+					}
+				}
+				if(flag) {
+					StringBuilder currentPath = new StringBuilder();
+					currentPath.append(path);
+					currentPath.append(i+":");
+					if(remainingAux!=null) {
+						traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
+					}else {
+						remainingAux.clear();
+						traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
+					}
+					currentPath=null;
+					if(remainingAux!=null){
+						remainingAux.clear();
+						remainingAux = null;
+					}
+				}
+				i=null;
+			}
+		}else {
+			distance += edgeCalc.calculate(current, root, JCLvars);
+			distance += edgeCalc.calculate(root, leaf, JCLvars);
+			path.append(root);
+			
+			float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
+			
+			if(upperBound>distance){
+				upperBound = (float) jcl.getValueLocking("upperL").getCorrectResult();
+				if(upperBound>distance){
+					jcl.setValueUnlocking("pathL", path.toString());
+					jcl.setValueUnlocking("upperL", distance);	
+					
+					updateLocalGlobal();
+					
+					System.out.println("partial result: " + distance + " " + path.toString());
+					
+				}else jcl.setValueUnlocking("upperL", upperBound);	
+			}			
+		}
+	}
 }
