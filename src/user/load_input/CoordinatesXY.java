@@ -115,6 +115,8 @@ public class CoordinatesXY extends LoadAbstract{
 	         inputLimpos.clear();
 	         inputLimpos=null;
 	         
+	         jcl.instantiateGlobalVar("numOfVertices", vertices.size());
+	         
 	         jcl.setValueUnlocking("vertices", vertices);
 	         
 	         jcl.setValueUnlocking("lower", lower);
@@ -125,11 +127,6 @@ public class CoordinatesXY extends LoadAbstract{
 
 	         
 	         
-	         System.out.println("imprimindo matrix de distancias");
-	         
-	         for(String k:distances.keySet()){
-	        	 System.out.println("Key: " + k + " || value: " + distances.get(k));
-	         }
 	         
 	         	        
 		}catch (Exception e){

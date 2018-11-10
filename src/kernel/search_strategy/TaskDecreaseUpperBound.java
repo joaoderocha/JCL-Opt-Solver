@@ -4,7 +4,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import user.edge_calculus.EdgeCalculusInterface;
+import user.delta_evaluation.DeltaEvaluationInterface;
 import user.pruning.PruningInterface;
 import user.utils.JCLglobalVariablesAccess;
 
@@ -44,9 +44,9 @@ public class TaskDecreaseUpperBound {
 		
 		JCL_facade jclLambari = JCL_FacadeImpl.getInstanceLambari();
 		
-		EdgeCalculusInterface edgeCalc = (EdgeCalculusInterface) loadInstance(edge);
+		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) loadInstance(edge);
 		
-		traverse2(jclLambari, instances, JCLvars, edgeCalc, vertices.size(), remaining, sb, ith, jth, jth, 0);
+		traverse(jclLambari, instances, JCLvars, edgeCalc, vertices.size(), remaining, sb, ith, jth, jth, 0);
 		
 		sb=null;	
 		
@@ -83,7 +83,7 @@ public class TaskDecreaseUpperBound {
 		
 	}	
 	
-	protected void traverse(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, EdgeCalculusInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance){
+	protected void traverse(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance){
 		if(!remaining.isEmpty()){
 			
 			for(String i:remaining){
@@ -91,7 +91,7 @@ public class TaskDecreaseUpperBound {
 				float currentUpperBound = distance + edgeCalc.calculate(current, i, JCLvars);	
 				float upperBound = (float) jcl.getValue("upperL").getCorrectResult();				
 															
-				if(currentUpperBound<upperBound){
+				if(edgeCalc.prune(currentUpperBound, upperBound)){
 					
 					ObjectSet<String> remainingAux = new ObjectOpenHashSet<String>(remaining.size()-1);
 					for(String j:remaining){
@@ -109,7 +109,7 @@ public class TaskDecreaseUpperBound {
 								remainingAux=null;
 							}
 						}
-										
+					
 					StringBuilder currentPath = new StringBuilder();
 					currentPath.append(path);
 					currentPath.append(i+":");
@@ -133,9 +133,9 @@ public class TaskDecreaseUpperBound {
 			
 			float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
 			
-			if(upperBound>distance){
+			if(edgeCalc.prune(upperBound, distance)){
 				upperBound = (float) jcl.getValueLocking("upperL").getCorrectResult();
-				if(upperBound>distance){
+				if(edgeCalc.prune(upperBound, distance)){
 					jcl.setValueUnlocking("pathL", path.toString());
 					jcl.setValueUnlocking("upperL", distance);	
 					
@@ -149,7 +149,7 @@ public class TaskDecreaseUpperBound {
 		}		
 		
 	}	
-	protected void traverse2(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, EdgeCalculusInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance)
+	protected void traverse2(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance)
 	{
 		if(!remaining.isEmpty()) {
 			
@@ -168,7 +168,6 @@ public class TaskDecreaseUpperBound {
 				for(PruningInterface x : instances) {
 					if(x!=null && flag) {
 						if(x.prune(args)) {
-							
 							flag = false;
 							remainingAux.clear();
 							remainingAux = null;
@@ -181,15 +180,13 @@ public class TaskDecreaseUpperBound {
 					currentPath.append(i+":");
 					if(remainingAux!=null) {
 						traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
-					}else {
-						remainingAux.clear();
-						traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
 					}
 					currentPath=null;
-					if(remainingAux!=null){
-						remainingAux.clear();
-						remainingAux = null;
-					}
+					
+				}
+				if(remainingAux!=null){
+					remainingAux.clear();
+					remainingAux = null;
 				}
 				i=null;
 			}

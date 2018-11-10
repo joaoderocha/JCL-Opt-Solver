@@ -3,7 +3,7 @@ package user.pruning;
 import java.awt.geom.Line2D;
 
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import user.edge_calculus.EdgeCalculusInterface;
+import user.delta_evaluation.DeltaEvaluationInterface;
 
 public class CrossLinesEuclideanPruning implements PruningInterface{
 	
@@ -17,7 +17,7 @@ public class CrossLinesEuclideanPruning implements PruningInterface{
 		String i = (String) args[7];
 		@SuppressWarnings("unchecked")
 		ObjectSet<String> remainingAux = (ObjectSet<String>) args[2];
-		EdgeCalculusInterface edgeCalc = (EdgeCalculusInterface) args[10];
+		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) args[10];
 		if(remainingAux!=null) {
 			String[] vertices = path.toString().split(":");
 			

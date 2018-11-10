@@ -1,7 +1,7 @@
 package user.pruning;
 
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import user.edge_calculus.EdgeCalculusInterface;
+import user.delta_evaluation.DeltaEvaluationInterface;
 
 public class RemainingVerticesPruning implements PruningInterface{
 
@@ -14,7 +14,7 @@ public class RemainingVerticesPruning implements PruningInterface{
 		ObjectSet<String> remainingAux = (ObjectSet<String>) args[2];
 		float upperBound = (float) args[9];
 		float currentUpperBound = (float) args[8];
-		EdgeCalculusInterface edgeCalc = (EdgeCalculusInterface) args[10];
+		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) args[10];
 		
 		for(String vertex:remainingAux){
 			currentUpperBound+=edgeCalc.get(vertex, "$shorterD$", JCLvars);

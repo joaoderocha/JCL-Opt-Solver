@@ -65,5 +65,26 @@ public class LoadClass {
 		} 	
 		
 	}
+	
+	public static long loadValue(String propertyName) {
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream("config.properties"));
+			return Long.parseLong( properties.getProperty(propertyName));
+		}catch(Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
+	public static boolean loadBoolean(String propertyName) {
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream("config.properties"));
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return Boolean.parseBoolean(properties.getProperty(propertyName));
+	}
 
 }

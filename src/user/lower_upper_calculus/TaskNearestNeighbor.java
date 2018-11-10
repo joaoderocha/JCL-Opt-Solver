@@ -6,7 +6,7 @@ import java.util.Set;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import user.edge_calculus.EdgeCalculusInterface;
+import user.delta_evaluation.DeltaEvaluationInterface;
 import user.utils.JCLglobalVariablesAccess;
 
 public class TaskNearestNeighbor{
@@ -33,14 +33,14 @@ public class TaskNearestNeighbor{
 			}
 		}
 		Object[] JCLvars = JCLglobalVariablesAccess.getVarsJCL(JCLv.split("\\;"));
-		EdgeCalculusInterface edgeCalc = (EdgeCalculusInterface) loadInstance(edgeWeightClass);
+		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) loadInstance(edgeWeightClass);
 		
 		traverse(edgeCalc, JCLvars, vertices.size(), ith, remaining, sb, ith, 0, 1);
 		
 		sb=null;		
 	}
 	
-	private void traverse(EdgeCalculusInterface edgeCalc, Object[] JCLvars, int numOfVertices, String vertex, Set<String> remaining, StringBuilder path, String current, float distance, int level){
+	private void traverse(DeltaEvaluationInterface edgeCalc, Object[] JCLvars, int numOfVertices, String vertex, Set<String> remaining, StringBuilder path, String current, float distance, int level){
 		if(level!=numOfVertices){
 			
 			String index = null;

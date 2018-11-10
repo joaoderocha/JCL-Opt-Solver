@@ -21,13 +21,16 @@ public class UpperCalculusNearestNeighbor implements UpperLowerCalculusInterface
 		List<Future<JCL_result>> tickets = new LinkedList<Future<JCL_result>>();
 		@SuppressWarnings("unchecked")
 		Set<String> vertices = (Set<String>) jcl.getValue("vertices").getCorrectResult();
-		String edge = LoadClass.loadString("edgecalculus");
+		String edge = LoadClass.loadString("deltaevaluation");
 		String jclVars = LoadClass.loadString("vars");
+		TaskNearestNeighbor x = new TaskNearestNeighbor();
 		for(String aux:vertices){
 			Object[] args = {aux, "nulo", edge, jclVars};
-			tickets.add(jcl.execute("TaskNearestNeighbor", args));
+			//tickets.add(jcl.execute("TaskNearestNeighbor", args));
+			x.execute(aux, "nulo", edge, jclVars);
 		}
 		
+		/*
 		for(Future<JCL_result> aux:tickets)
 			try {
 				aux.get();
@@ -36,7 +39,7 @@ public class UpperCalculusNearestNeighbor implements UpperLowerCalculusInterface
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
+		*/
 		tickets.clear();
 		tickets = null;
 	}

@@ -11,6 +11,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import kernel.search_strategy.TaskDecreaseUpperBound;
 import kernel.utils.CleanLocalEnvironment;
 import kernel.utils.LoadClass;
 import user.load_input.LoadInterface;
@@ -87,9 +88,10 @@ public class BtMultipleBranchParallelism implements KernelMode{
 	
 	private void traverse(ObjectSet<String> vertices, String[] pruning, List<Future<JCL_result>> tickets, String[] nickName, JCL_facade jcl){
 		Set<String> restrictions = new HashSet<String>();		
-		String edge = LoadClass.loadString("edgecalculus");
+		String edge = LoadClass.loadString("deltaevaluation");
 		String jclVars = LoadClass.loadString("vars");
 		System.out.println("Executing method...");
+		TaskDecreaseUpperBound obj = new TaskDecreaseUpperBound();
 		for(String i:vertices){
 			
 			for(String j:vertices){ 
@@ -97,7 +99,9 @@ public class BtMultipleBranchParallelism implements KernelMode{
 				if(!j.equals(i) && !restrictions.contains(j)){	
 					
 						Object[] args = {i,j, pruning, edge, jclVars};
+						// startar thread para debug
 						tickets.add(jcl.execute(nickName[nickName.length-1], args));			
+						//obj.execute(i, j, pruning, edge, jclVars);
 				}							
 			}
 			restrictions.add(i);						

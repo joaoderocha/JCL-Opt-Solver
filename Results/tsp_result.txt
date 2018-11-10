@@ -1,0 +1,16 @@
+----------------------------------------------------------------------------------
+mode = kernel.mode.SymetricTspPermutation
+load = user.load_input.DistanceMatrix
+upperlower = user.lower_upper_calculus.LowerBoundCalculusExample
+searchstrategy = kernel.search_strategy.TspTaskPermutationalWalkthrough
+evaluation = user.evaluation.DirectPermutationalEvaluation
+pruning = user.pruning.RotationTestPruning
+edgecalculus = user.edge_calculus.StaticCalculus
+vars = DataStruct
+timeout = 5000
+verify = 10
+log = false
+Melhor Distancia: no result
+Path Found: no result
+Time Spent: 14sec
+----------------------------------------------------------------------------------

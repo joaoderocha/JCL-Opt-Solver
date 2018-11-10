@@ -47,13 +47,13 @@ public class DistanceMatrix extends LoadAbstract{
 		     float[][] matrix = null;
 		     int linha = 0;
 		     float lower=0;
-		     
+		     int matrixSize = 0;
 		     //ler o arquivo
 	         while ((str = in.readLine()) != null) {
 	        	 if(!str.trim().equals("EOF")){
 	        		 String[] inputDetalhes = str.split(" ");
 	        		 if(matrix==null){
-	        			 int matrixSize = 0;
+	        			 matrixSize = 0;
 	        			 for(String frag:inputDetalhes){
 		        			 if(!frag.equals("")) matrixSize++;
 		        		 }
@@ -78,7 +78,8 @@ public class DistanceMatrix extends LoadAbstract{
 	         JCL_facade jcl = JCL_FacadeImpl.getInstance();
 	         
 	         @SuppressWarnings("unchecked")
-			ObjectSet<String> vertices = (ObjectSet<String>) jcl.getValue("vertices").getCorrectResult();
+			 ObjectSet<String> vertices = (ObjectSet<String>) jcl.getValue("vertices").getCorrectResult();
+	         jcl.instantiateGlobalVar("numOfVertices", matrixSize);
 	         float lowest = Float.MAX_VALUE;
 	        
 	         //montando distancias	                  
