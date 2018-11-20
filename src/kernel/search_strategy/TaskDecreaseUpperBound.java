@@ -5,13 +5,14 @@ import interfaces.kernel.JCL_facade;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import user.delta_evaluation.DeltaEvaluationInterface;
+import user.min_or_max_prune.MinOrMaxPruneInterface;
 import user.pruning.PruningInterface;
 import user.utils.JCLglobalVariablesAccess;
 
 
 public class TaskDecreaseUpperBound {
 	
-	public void execute(String ith, String jth, String[] classes, String edge, String JCLv){
+	public void execute(String ith, String jth, String[] classes, String edge,String mom, String JCLv){
 		
 		StringBuilder sb = new StringBuilder();
 		
@@ -30,7 +31,8 @@ public class TaskDecreaseUpperBound {
 				remaining.add(i);				
 			}
 		}	
-		
+		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) loadInstance(edge);
+		MinOrMaxPruneInterface momprune = (MinOrMaxPruneInterface) loadInstance(mom);
 		PruningInterface[] instances = new PruningInterface[classes.length];
 		for(int i=0; i<classes.length;i++)
 			if(!classes[i].equals("null"))
@@ -40,32 +42,33 @@ public class TaskDecreaseUpperBound {
 		if(!JCL_FacadeImpl.getInstanceLambari().containsGlobalVar("upperL")){
 			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("upperL", jcl.getValue("upper").getCorrectResult());
 			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("pathL", jcl.getValue("path").getCorrectResult());
-		} else updateLocalGlobal();		
+		} else updateLocalGlobal(momprune);		
 		
 		JCL_facade jclLambari = JCL_FacadeImpl.getInstanceLambari();
 		
-		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) loadInstance(edge);
 		
-		traverse(jclLambari, instances, JCLvars, edgeCalc, vertices.size(), remaining, sb, ith, jth, jth, 0);
+		
+		traverse(jclLambari, instances, JCLvars, edgeCalc,momprune, vertices.size(), remaining, sb, ith, jth, jth, 0);
 		
 		sb=null;	
 		
 		//updateLocalGlobal();
 	}
 	
-	private void updateLocalGlobal(){
+	private void updateLocalGlobal(MinOrMaxPruneInterface edge){
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
-		float upperBound = (float) jcl.getValue("upper").getCorrectResult();
-		float localUpperBound = (float) JCL_FacadeImpl.getInstanceLambari().getValue("upperL").getCorrectResult();
-		if(upperBound>localUpperBound){
-			upperBound = (float) jcl.getValueLocking("upper").getCorrectResult();
-			if(upperBound>localUpperBound){
+		
+		double upperBound = (double) jcl.getValue("upper").getCorrectResult();
+		double localUpperBound = (double) JCL_FacadeImpl.getInstanceLambari().getValue("upperL").getCorrectResult();
+		if(!edge.prune(upperBound, localUpperBound)){
+			upperBound = (double) jcl.getValueLocking("upper").getCorrectResult();
+			if(!edge.prune(upperBound, localUpperBound)){
 				jcl.setValueUnlocking("path", JCL_FacadeImpl.getInstanceLambari().getValue("pathL").getCorrectResult());
 				jcl.setValueUnlocking("upper", localUpperBound);
 			}else jcl.setValueUnlocking("upper", upperBound);
-		}else if (upperBound<localUpperBound){
-			localUpperBound = (float) JCL_FacadeImpl.getInstanceLambari().getValueLocking("upperL").getCorrectResult();
-			if(upperBound<localUpperBound){
+		}else if (edge.prune(upperBound, localUpperBound)){
+			localUpperBound = (double) JCL_FacadeImpl.getInstanceLambari().getValueLocking("upperL").getCorrectResult();
+			if(edge.prune(upperBound, localUpperBound)){
 				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("pathL", jcl.getValue("path").getCorrectResult());
 				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("upperL", upperBound);
 			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("upperL", localUpperBound);
@@ -83,15 +86,15 @@ public class TaskDecreaseUpperBound {
 		
 	}	
 	
-	protected void traverse(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance){
+	protected void traverse(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc,MinOrMaxPruneInterface mom, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, double distance){
 		if(!remaining.isEmpty()){
 			
 			for(String i:remaining){
 				
-				float currentUpperBound = distance + edgeCalc.calculate(current, i, JCLvars);	
-				float upperBound = (float) jcl.getValue("upperL").getCorrectResult();				
+				double currentUpperBound = distance + edgeCalc.calculate(current, i, JCLvars);	
+				double upperBound = (double) jcl.getValue("upperL").getCorrectResult();				
 															
-				if(edgeCalc.prune(currentUpperBound, upperBound)){
+				if(mom.prune(currentUpperBound, upperBound)){
 					
 					ObjectSet<String> remainingAux = new ObjectOpenHashSet<String>(remaining.size()-1);
 					for(String j:remaining){
@@ -114,7 +117,7 @@ public class TaskDecreaseUpperBound {
 					currentPath.append(path);
 					currentPath.append(i+":");
 					if(remainingAux!=null)				
-						traverse(jcl, instances, JCLvars, edgeCalc, numOfVertices, remainingAux, currentPath, root, leaf, i, currentUpperBound);
+						traverse(jcl, instances, JCLvars, edgeCalc,mom, numOfVertices, remainingAux, currentPath, root, leaf, i, currentUpperBound);
 					currentPath = null;	
 					if(remainingAux!=null){
 						remainingAux.clear();
@@ -131,15 +134,15 @@ public class TaskDecreaseUpperBound {
 			distance += edgeCalc.calculate(root, leaf, JCLvars);
 			path.append(root);
 			
-			float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
+			double upperBound = (double) jcl.getValue("upperL").getCorrectResult();
 			
-			if(edgeCalc.prune(upperBound, distance)){
-				upperBound = (float) jcl.getValueLocking("upperL").getCorrectResult();
-				if(edgeCalc.prune(upperBound, distance)){
+			if(mom.prune(upperBound, distance)){
+				upperBound = (double) jcl.getValueLocking("upperL").getCorrectResult();
+				if(mom.prune(upperBound, distance)){
 					jcl.setValueUnlocking("pathL", path.toString());
 					jcl.setValueUnlocking("upperL", distance);	
 					
-					updateLocalGlobal();
+					updateLocalGlobal(mom);
 					
 					System.out.println("partial result: " + distance + " " + path.toString());
 					
@@ -150,12 +153,12 @@ public class TaskDecreaseUpperBound {
 		
 	}	
 	protected void traverse2(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance)
-	{
+	{/*
 		if(!remaining.isEmpty()) {
 			
 			for(String i:remaining) {
 				
-				float Datual = distance + edgeCalc.calculate(current, i, JCLvars);
+				//float Datual = distance + edgeCalc.calculate(current, i, JCLvars);
 				float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
 				boolean flag = true;
 				ObjectSet<String> remainingAux = new ObjectOpenHashSet<String>(remaining.size()-1);
@@ -164,7 +167,7 @@ public class TaskDecreaseUpperBound {
 						remainingAux.add(j);
 					}	
 				}
-				Object[] args = {JCLvars, numOfVertices, remainingAux, path, root, leaf, current, i, Datual, upperBound, edgeCalc};
+				//Object[] args = {JCLvars, numOfVertices, remainingAux, path, root, leaf, current, i, Datual, upperBound, edgeCalc};
 				for(PruningInterface x : instances) {
 					if(x!=null && flag) {
 						if(x.prune(args)) {
@@ -179,7 +182,7 @@ public class TaskDecreaseUpperBound {
 					currentPath.append(path);
 					currentPath.append(i+":");
 					if(remainingAux!=null) {
-						traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
+						//traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
 					}
 					currentPath=null;
 					
@@ -203,12 +206,12 @@ public class TaskDecreaseUpperBound {
 					jcl.setValueUnlocking("pathL", path.toString());
 					jcl.setValueUnlocking("upperL", distance);	
 					
-					updateLocalGlobal();
+					//updateLocalGlobal();
 					
 					System.out.println("partial result: " + distance + " " + path.toString());
 					
 				}else jcl.setValueUnlocking("upperL", upperBound);	
 			}			
-		}
+		}*/
 	}
 }

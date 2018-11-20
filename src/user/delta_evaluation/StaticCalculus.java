@@ -1,6 +1,6 @@
 package user.delta_evaluation;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 
 public class StaticCalculus implements DeltaEvaluationInterface{
 	
@@ -16,21 +16,17 @@ public class StaticCalculus implements DeltaEvaluationInterface{
 	 * Calculate standard implementation
 	 */
 	@Override
-	public float calculate(String vertexOne, String vertexTwo, Object[] JCLvars) {
+	public double calculate(String vertexOne, String vertexTwo, Object[] JCLvars) {
 		@SuppressWarnings("unchecked")
-		Object2ObjectMap<String, Float> distances = (Object2ObjectMap<String, Float>) JCLvars[0];
+		Object2DoubleMap<String> distances = (Object2DoubleMap<String>) JCLvars[0];
 		return distances.get(vertexOne+":"+vertexTwo);
 	}
 	
 	@Override
-	public float get(String vertexOne, String vertexTwo, Object[] JCLvars) {
+	public double get(String vertexOne, String vertexTwo, Object[] JCLvars) {
 		return calculate(vertexOne, vertexTwo, JCLvars);
 	}
 
-	@Override
-	public boolean prune(float current, float newValue) {
-		
-		return current<newValue;
-	}
+	
 
 }

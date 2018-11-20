@@ -7,6 +7,8 @@ import java.util.List;
 
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -44,14 +46,14 @@ public class CoordinatesXY extends LoadAbstract{
 		super.load(filePath);
 		try{	
 			 JCL_facade jcl = JCL_FacadeImpl.getInstance();
-			 Object2ObjectMap<String, Float> distances = new Object2ObjectOpenHashMap<String, Float>();
+			 Object2DoubleMap<String> distances = new Object2DoubleOpenHashMap<String>();
 			 			
 			 BufferedReader in = new BufferedReader(new FileReader(filePath));
 		     String str = null;	  
 		     		         
 		     List<String> inputLimpos = new LinkedList<String>();
 		     
-		     float lower=0;
+		     double lower=0;
 		     
 	         //ler o arquivo
 	         while ((str = in.readLine()) != null) {
@@ -73,13 +75,15 @@ public class CoordinatesXY extends LoadAbstract{
 	        @SuppressWarnings("unchecked")
 			ObjectSet<String> vertices = (ObjectSet<String>) jcl.getValue("vertices").getCorrectResult();
 	         
-	         float lowest = Float.MAX_VALUE;
-	         
+	         double lowest = Double.MAX_VALUE;
+	         /*
+	          * transitar todo projeto para DOUBLE tirar todos floats para que aceite o permutation
+	          */
 	         //montando distancias	                  
 	         for(String umaEntrada:inputLimpos){
 	        	 String[] umaEntradaDetalhe = umaEntrada.split(":");
-	        	 float menorD = Float.MAX_VALUE;
-	        	 float maiorD = Float.MIN_VALUE;
+	        	 double menorD = Double.MAX_VALUE;
+	        	 double maiorD = Double.MIN_VALUE;
 	        	 vertices.add("$"+umaEntradaDetalhe[0]+"$");
 	        	 for(String outraEntrada:inputLimpos){
 	        		 String[] outraEntradaDetalhe = outraEntrada.split(":");
@@ -87,7 +91,7 @@ public class CoordinatesXY extends LoadAbstract{
 	        			 double dx = (Double.parseDouble(outraEntradaDetalhe[1])-Double.parseDouble(umaEntradaDetalhe[1]));
 	        			 double dy = (Double.parseDouble(outraEntradaDetalhe[2])-Double.parseDouble(umaEntradaDetalhe[2]));
 	        			 
-	        			 float d =  (float) Math.hypot(dx, dy);
+	        			 double d =  (double) Math.hypot(dx, dy);
 	        			 
 	        			 distances.put("$"+umaEntradaDetalhe[0]+"$:$"+outraEntradaDetalhe[0]+"$", d);	        			 
 	        			 

@@ -21,10 +21,10 @@ public class CrossLinesEuclideanPruning implements PruningInterface{
 		if(remainingAux!=null) {
 			String[] vertices = path.toString().split(":");
 			
-			float x1 = edgeCalc.get(i, "$X$", JCLvars);
-			float y1 = edgeCalc.get(i, "$Y$", JCLvars);
+			double x1 = edgeCalc.get(i, "$X$", JCLvars);
+			double y1 = edgeCalc.get(i, "$Y$", JCLvars);
 			
-			float[][] x3y3x4y4 = new float[vertices.length-1][4];
+			double[][] x3y3x4y4 = new double[vertices.length-1][4];
 			
 			for(int j=1; j<vertices.length;j++){
 				x3y3x4y4[j-1][0] = edgeCalc.get(vertices[j-1], "$X$", JCLvars);
@@ -35,10 +35,10 @@ public class CrossLinesEuclideanPruning implements PruningInterface{
 			
 			for(String oneR:remainingAux){		
 				
-				float x2 = edgeCalc.get(oneR, "$X$", JCLvars);
-				float y2 = edgeCalc.get(oneR, "$Y$", JCLvars);	
+				double x2 = edgeCalc.get(oneR, "$X$", JCLvars);
+				double y2 = edgeCalc.get(oneR, "$Y$", JCLvars);	
 			
-				for(float[] aux: x3y3x4y4)								
+				for(double[] aux: x3y3x4y4)								
 					if(Line2D.Float.linesIntersect(x1, y1, x2, y2, aux[0], aux[1], aux[2], aux[3])) {
 						vertices = null;
 						x3y3x4y4=null;

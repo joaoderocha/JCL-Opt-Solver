@@ -90,6 +90,7 @@ public class BtMultipleBranchParallelism implements KernelMode{
 		Set<String> restrictions = new HashSet<String>();		
 		String edge = LoadClass.loadString("deltaevaluation");
 		String jclVars = LoadClass.loadString("vars");
+		String mom = LoadClass.loadString("minormax");
 		System.out.println("Executing method...");
 		TaskDecreaseUpperBound obj = new TaskDecreaseUpperBound();
 		for(String i:vertices){
@@ -98,7 +99,7 @@ public class BtMultipleBranchParallelism implements KernelMode{
 				
 				if(!j.equals(i) && !restrictions.contains(j)){	
 					
-						Object[] args = {i,j, pruning, edge, jclVars};
+						Object[] args = {i,j, pruning, edge,mom, jclVars};
 						// startar thread para debug
 						tickets.add(jcl.execute(nickName[nickName.length-1], args));			
 						//obj.execute(i, j, pruning, edge, jclVars);

@@ -40,15 +40,15 @@ public class TaskNearestNeighbor{
 		sb=null;		
 	}
 	
-	private void traverse(DeltaEvaluationInterface edgeCalc, Object[] JCLvars, int numOfVertices, String vertex, Set<String> remaining, StringBuilder path, String current, float distance, int level){
+	private void traverse(DeltaEvaluationInterface edgeCalc, Object[] JCLvars, int numOfVertices, String vertex, Set<String> remaining, StringBuilder path, String current, double distance, int level){
 		if(level!=numOfVertices){
 			
 			String index = null;
-			float d = Float.MAX_VALUE;
+			double d = Double.MAX_VALUE;
 			
 			for(String next:remaining){
 				
-				float currentDistance = edgeCalc.calculate(current, next, JCLvars);
+				double currentDistance = edgeCalc.calculate(current, next, JCLvars);
 			
 				if(currentDistance<d){
 					index=next;
@@ -59,7 +59,7 @@ public class TaskNearestNeighbor{
 			
 			remaining.remove(index);
 						
-			float currentDistance = distance + edgeCalc.calculate(current, index, JCLvars);
+			double currentDistance = distance + edgeCalc.calculate(current, index, JCLvars);
 			path.append(index+":");
 			
 			traverse(edgeCalc, JCLvars, numOfVertices, vertex, remaining, path, index, currentDistance, level+1);
@@ -67,9 +67,9 @@ public class TaskNearestNeighbor{
 		}else{
 			distance += edgeCalc.calculate(current, vertex, JCLvars);
 			
-			float bestDistance = (float) JCL_FacadeImpl.getInstance().getValue("upper").getCorrectResult();
+			double bestDistance = (double) JCL_FacadeImpl.getInstance().getValue("upper").getCorrectResult();
 			if(bestDistance>distance){
-				bestDistance = (float) JCL_FacadeImpl.getInstance().getValueLocking("upper").getCorrectResult();
+				bestDistance = (double) JCL_FacadeImpl.getInstance().getValueLocking("upper").getCorrectResult();
 				if(bestDistance>distance){
 					JCL_FacadeImpl.getInstance().setValueUnlocking("path", path.toString());
 					JCL_FacadeImpl.getInstance().setValueUnlocking("upper", distance);

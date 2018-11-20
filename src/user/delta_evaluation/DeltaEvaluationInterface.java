@@ -18,7 +18,7 @@ public interface DeltaEvaluationInterface{
 	 * @return float value calculated from user function
 	 */
 	//performs an edge calculus on-the-fly
-	public float calculate(String vertexOne, String vertexTwo, Object[] JCLvars);
+	public double calculate(String vertexOne, String vertexTwo, Object[] JCLvars);
 	/**
 	 * This method is used to simply retrieve from user data structure float value
 	 * @param vertexOne usually the first argument of the data structure
@@ -27,13 +27,7 @@ public interface DeltaEvaluationInterface{
 	 * @return float value inside user data structure
 	 */
 	//do not perform an edge calculus. instead, it uses the existing edge weight value
-	public float get(String vertexOne, String vertexTwo, Object[] JCLvars);
-	/**
-	 * Perform a quick test wether the actual solution has gone further or below the last valid solution
-	 * @param current value of the current solution
-	 * @param newValue value of the last solution
-	 * @return boolean value wich should represent wether the first value is bigger or lower than second value
-	 */
-	public boolean prune(float current,float newValue);
+	public double get(String vertexOne, String vertexTwo, Object[] JCLvars);
+	
 
 }

@@ -13,8 +13,8 @@ public abstract class LoadAbstract implements LoadInterface{
 	
 	public void load(String filePath){
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
-		jcl.instantiateGlobalVar("upper", new Float(Float.MAX_VALUE));
-		jcl.instantiateGlobalVar("lower", new Float(Float.MIN_VALUE));
+		jcl.instantiateGlobalVar("upper", new Double(Double.MAX_VALUE));
+		jcl.instantiateGlobalVar("lower", new Double(Double.MIN_VALUE));
 		jcl.instantiateGlobalVar("path", "");
 		ObjectSet<String> vertices = new ObjectOpenHashSet<String>();
 		jcl.instantiateGlobalVar("vertices", vertices);

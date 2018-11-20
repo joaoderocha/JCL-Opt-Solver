@@ -7,7 +7,7 @@ public class LowerThanUpperPruning implements PruningInterface {
 	//return false if dont want to execute
 	@Override
 	public boolean prune(Object... args) {
-		return !((float)args[8] < (float)args[9]);
+		return !((double)args[8] < (double)args[9]);
 	}
 
 }
