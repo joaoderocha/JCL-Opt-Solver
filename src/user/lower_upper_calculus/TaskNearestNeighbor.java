@@ -76,7 +76,9 @@ public class TaskNearestNeighbor{
 				if(bestDistance>distance){
 					//JCL_FacadeImpl.getInstance().setValueUnlocking("path", path.toString());
 					//JCL_FacadeImpl.getInstance().setValueUnlocking("upper", distance);
+					best = null;
 					best = new Pair<String,Double>(path.toString(),distance);
+					
 					JCL_FacadeImpl.getInstance().setValueUnlocking("bestResult", best);
 				}else{
 					JCL_FacadeImpl.getInstance().setValueUnlocking("bestResult", best);

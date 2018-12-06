@@ -26,11 +26,11 @@ public class UpperCalculusNearestNeighbor implements UpperLowerCalculusInterface
 		TaskNearestNeighbor x = new TaskNearestNeighbor();
 		for(String aux:vertices){
 			Object[] args = {aux, "nulo", edge, jclVars};
-			//tickets.add(jcl.execute("TaskNearestNeighbor", args));
-			x.execute(aux, "nulo", edge, jclVars);
+			tickets.add(jcl.execute("TaskNearestNeighbor", args));
+			//x.execute(aux, "nulo", edge, jclVars);
 		}
 		
-		/*
+		
 		for(Future<JCL_result> aux:tickets)
 			try {
 				aux.get();
@@ -39,7 +39,7 @@ public class UpperCalculusNearestNeighbor implements UpperLowerCalculusInterface
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		*/
+		
 		tickets.clear();
 		tickets = null;
 	}

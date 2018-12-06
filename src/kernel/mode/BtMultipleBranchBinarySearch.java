@@ -11,6 +11,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import javafx.util.Pair;
 import kernel.search_strategy.TaskDecreaseUpperBound;
 import kernel.utils.LoadClass;
 import user.load_input.LoadInterface;
@@ -35,10 +36,11 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
 		UpperLowerCalculusInterface upperLowerCalculus = (UpperLowerCalculusInterface)LoadClass.loadInstance("upperlower");
 		upperLowerCalculus.execute();
+		Pair<String,Double> bestResult = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
 		System.out.println("Finished to find a valid graph path to be used as upper and lower bounds");
-		System.out.println("upper bound: " + jcl.getValue("upper").getCorrectResult());
+		System.out.println("upper bound: " + bestResult.getValue());
 		System.out.println("lower bound: " + jcl.getValue("lower").getCorrectResult());
-		System.out.println("path: "+ jcl.getValue("path").getCorrectResult());
+		System.out.println("path: "+ bestResult.getKey());
 		System.out.println("end of upper/lower bound values calculus... ");
 		
 		@SuppressWarnings("unchecked")
@@ -56,9 +58,9 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 		Object[] args=null;			
 		int runs =1;
 		
-		double upperAux = (double) jcl.getValue("upper").getCorrectResult();
+		double upperAux = bestResult.getValue();
 		
-		while((double) jcl.getValue("lower").getCorrectResult()!=(double) jcl.getValue("upper").getCorrectResult()){
+		while((double) jcl.getValue("lower").getCorrectResult()!=((Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult()).getValue()){
 			System.out.println("Binary search strategy - round: " + runs);
 			if (runs==1){
 				double lowerAux = (double) jcl.getValue("lower").getCorrectResult();
@@ -97,9 +99,15 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 				
 				
 				if(pivot==(double) jcl.getValue("upper").getCorrectResult()){ 
-					System.out.println("3");
-					jcl.setValueUnlocking("lower", pivot);
-					jcl.setValueUnlocking("upper", (upperAux+pivot)/2);
+					if(Math.abs(pivot - ((upperAux+pivot)/2)) < 1) {
+						jcl.setValueUnlocking("lower", pivot);
+						jcl.setValueUnlocking("upper", pivot+1);
+					}else {
+						jcl.setValueUnlocking("lower", pivot);
+						jcl.setValueUnlocking("upper", (upperAux+pivot)/2);
+					}
+					
+					
 								
 					System.out.println("pivot: "+pivot);
 					
@@ -163,8 +171,8 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 				if(!j.equals(i) && !restrictions.contains(j)){	
 					
 					Object[] args = {i,j, pruning, edge,mom, jclVars};
-					tickets.add(jcl.execute(nickName[nickName.length-1], args));			
-					//obj.execute(i,j, pruning, edge,mom, jclVars);
+					//tickets.add(jcl.execute(nickName[nickName.length-1], args));			
+					obj.execute(i,j, pruning, edge,mom, jclVars);
 				}							
 			}
 			restrictions.add(i);						

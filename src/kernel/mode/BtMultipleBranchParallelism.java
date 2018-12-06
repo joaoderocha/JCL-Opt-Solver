@@ -40,10 +40,11 @@ public class BtMultipleBranchParallelism implements KernelMode{
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
 		UpperLowerCalculusInterface upperLowerCalculus = (UpperLowerCalculusInterface)LoadClass.loadInstance("upperlower");
 		upperLowerCalculus.execute();
+		Pair<String,Double> best = (Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult();
 		System.out.println("Finished to find a valid graph path to be used as upper and lower bounds");
-		System.out.println("upper bound: " + ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getValue());
+		System.out.println("upper bound: " + best.getValue());
 		System.out.println("lower bound: " + jcl.getValue("lower").getCorrectResult());
-		System.out.println("path: "+ ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getKey());
+		System.out.println("path: "+ best.getKey());
 		System.out.println("end of upper/lower bound values calculus... ");
 		
 		@SuppressWarnings("unchecked")

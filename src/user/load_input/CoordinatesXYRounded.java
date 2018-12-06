@@ -91,7 +91,7 @@ public class CoordinatesXYRounded extends LoadAbstract{
 	        			 double dx = (Double.parseDouble(outraEntradaDetalhe[1])-Double.parseDouble(umaEntradaDetalhe[1]));
 	        			 double dy = (Double.parseDouble(outraEntradaDetalhe[2])-Double.parseDouble(umaEntradaDetalhe[2]));
 	        			 
-	        			 double d = (double) Math.hypot(dx, dy);
+	        			 double d = Math.round((double) Math.hypot(dx, dy));
 	        			 
 	        			 distances.put("$"+umaEntradaDetalhe[0]+"$:$"+outraEntradaDetalhe[0]+"$", d);	        			 
 	        			 
