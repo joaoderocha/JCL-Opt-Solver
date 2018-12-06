@@ -6,6 +6,7 @@ import java.util.Set;
 import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import javafx.util.Pair;
 import user.delta_evaluation.DeltaEvaluationInterface;
 import user.utils.JCLglobalVariablesAccess;
 
@@ -40,6 +41,7 @@ public class TaskNearestNeighbor{
 		sb=null;		
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void traverse(DeltaEvaluationInterface edgeCalc, Object[] JCLvars, int numOfVertices, String vertex, Set<String> remaining, StringBuilder path, String current, double distance, int level){
 		if(level!=numOfVertices){
 			
@@ -66,15 +68,18 @@ public class TaskNearestNeighbor{
 			
 		}else{
 			distance += edgeCalc.calculate(current, vertex, JCLvars);
-			
-			double bestDistance = (double) JCL_FacadeImpl.getInstance().getValue("upper").getCorrectResult();
+			Pair<String,Double> best = (Pair<String,Double>) JCL_FacadeImpl.getInstance().getValue("bestResult").getCorrectResult();
+			double bestDistance = best.getValue();//(double) JCL_FacadeImpl.getInstance().getValue("upper").getCorrectResult();
 			if(bestDistance>distance){
-				bestDistance = (double) JCL_FacadeImpl.getInstance().getValueLocking("upper").getCorrectResult();
+				best = (Pair<String,Double>) JCL_FacadeImpl.getInstance().getValueLocking("bestResult").getCorrectResult();
+				bestDistance = best.getValue();//(double) JCL_FacadeImpl.getInstance().getValueLocking("upper").getCorrectResult();
 				if(bestDistance>distance){
-					JCL_FacadeImpl.getInstance().setValueUnlocking("path", path.toString());
-					JCL_FacadeImpl.getInstance().setValueUnlocking("upper", distance);
+					//JCL_FacadeImpl.getInstance().setValueUnlocking("path", path.toString());
+					//JCL_FacadeImpl.getInstance().setValueUnlocking("upper", distance);
+					best = new Pair<String,Double>(path.toString(),distance);
+					JCL_FacadeImpl.getInstance().setValueUnlocking("bestResult", best);
 				}else{
-					JCL_FacadeImpl.getInstance().setValueUnlocking("upper", bestDistance);
+					JCL_FacadeImpl.getInstance().setValueUnlocking("bestResult", best);
 				}	
 			}								
 		}

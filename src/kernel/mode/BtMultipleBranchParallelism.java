@@ -11,6 +11,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import interfaces.kernel.JCL_result;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import javafx.util.Pair;
 import kernel.search_strategy.TaskDecreaseUpperBound;
 import kernel.utils.CleanLocalEnvironment;
 import kernel.utils.LoadClass;
@@ -40,9 +41,9 @@ public class BtMultipleBranchParallelism implements KernelMode{
 		UpperLowerCalculusInterface upperLowerCalculus = (UpperLowerCalculusInterface)LoadClass.loadInstance("upperlower");
 		upperLowerCalculus.execute();
 		System.out.println("Finished to find a valid graph path to be used as upper and lower bounds");
-		System.out.println("upper bound: " + jcl.getValue("upper").getCorrectResult());
+		System.out.println("upper bound: " + ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getValue());
 		System.out.println("lower bound: " + jcl.getValue("lower").getCorrectResult());
-		System.out.println("path: "+ jcl.getValue("path").getCorrectResult());
+		System.out.println("path: "+ ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getKey());
 		System.out.println("end of upper/lower bound values calculus... ");
 		
 		@SuppressWarnings("unchecked")
@@ -59,8 +60,8 @@ public class BtMultipleBranchParallelism implements KernelMode{
 		
 		System.out.println();
 		System.out.println("elapsed time (sec): " + (System.nanoTime()-time)/1000000000);
-		System.out.println("best path value: " + jcl.getValue("upper").getCorrectResult());
-		System.out.println("best path: " + jcl.getValue("path").getCorrectResult());
+		System.out.println("best path value: " + ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getValue());
+		System.out.println("best path: " + ((Pair<String,Double>)jcl.getValue("bestResult").getCorrectResult()).getKey());
 		
 		jcl.register(CleanLocalEnvironment.class, "CleanLocalEnvironment");
 		Object[] args=null;	
@@ -102,7 +103,7 @@ public class BtMultipleBranchParallelism implements KernelMode{
 						Object[] args = {i,j, pruning, edge,mom, jclVars};
 						// startar thread para debug
 						tickets.add(jcl.execute(nickName[nickName.length-1], args));			
-						//obj.execute(i, j, pruning, edge, jclVars);
+						//obj.execute(i,j, pruning, edge,mom, jclVars);
 				}							
 			}
 			restrictions.add(i);						

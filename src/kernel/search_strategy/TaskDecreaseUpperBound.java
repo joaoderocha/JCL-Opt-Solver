@@ -4,6 +4,7 @@ import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import javafx.util.Pair;
 import user.delta_evaluation.DeltaEvaluationInterface;
 import user.min_or_max_prune.MinOrMaxPruneInterface;
 import user.pruning.PruningInterface;
@@ -39,13 +40,10 @@ public class TaskDecreaseUpperBound {
 				instances[i] = (PruningInterface) loadInstance(classes[i]);
 			else instances[i] = null;
 		
-		if(!JCL_FacadeImpl.getInstanceLambari().containsGlobalVar("upperL")){
-			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("upperL", jcl.getValue("upper").getCorrectResult());
-			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("pathL", jcl.getValue("path").getCorrectResult());
+		if(!JCL_FacadeImpl.getInstanceLambari().containsGlobalVar("bestResultL")){
+			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("bestResultL", jcl.getValue("bestResult").getCorrectResult());
 		} else updateLocalGlobal(momprune);		
-		
 		JCL_facade jclLambari = JCL_FacadeImpl.getInstanceLambari();
-		
 		
 		
 		traverse(jclLambari, instances, JCLvars, edgeCalc,momprune, vertices.size(), remaining, sb, ith, jth, jth, 0);
@@ -57,8 +55,7 @@ public class TaskDecreaseUpperBound {
 	
 	private void updateLocalGlobal(MinOrMaxPruneInterface edge){
 		JCL_facade jcl = JCL_FacadeImpl.getInstance();
-		
-		double upperBound = (double) jcl.getValue("upper").getCorrectResult();
+		/*double upperBound = (double) jcl.getValue("upper").getCorrectResult();
 		double localUpperBound = (double) JCL_FacadeImpl.getInstanceLambari().getValue("upperL").getCorrectResult();
 		if(!edge.prune(upperBound, localUpperBound)){
 			upperBound = (double) jcl.getValueLocking("upper").getCorrectResult();
@@ -72,6 +69,21 @@ public class TaskDecreaseUpperBound {
 				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("pathL", jcl.getValue("path").getCorrectResult());
 				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("upperL", upperBound);
 			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("upperL", localUpperBound);
+		}*/
+		
+		
+		Pair<String,Double> x = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
+		Pair<String,Double> localUpperBound = (Pair<String,Double>) JCL_FacadeImpl.getInstanceLambari().getValue("bestResultL").getCorrectResult();
+		if(!edge.prune(x.getValue(), localUpperBound.getValue())){
+			x =  (Pair<String,Double>) jcl.getValueLocking("bestResult").getCorrectResult();
+			if(!edge.prune(x.getValue(), localUpperBound.getValue())) {
+				jcl.setValueUnlocking("bestResult", localUpperBound);
+			}else jcl.setValueUnlocking("bestResult", x);
+		}else if(edge.prune(x.getValue(), localUpperBound.getValue())) {
+			localUpperBound =  (Pair<String,Double>) jcl.getValueLocking("bestResultL").getCorrectResult();
+			if(edge.prune(x.getValue(), localUpperBound.getValue())) {
+				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",x);
+			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",localUpperBound);
 		}
 	}
 	
@@ -92,7 +104,7 @@ public class TaskDecreaseUpperBound {
 			for(String i:remaining){
 				
 				double currentUpperBound = distance + edgeCalc.calculate(current, i, JCLvars);	
-				double upperBound = (double) jcl.getValue("upperL").getCorrectResult();				
+				double upperBound = ((Pair<String,Double>) jcl.getValue("bestResultL").getCorrectResult()).getValue();				
 															
 				if(mom.prune(currentUpperBound, upperBound)){
 					
@@ -129,89 +141,29 @@ public class TaskDecreaseUpperBound {
 			}
 			
 		}else{
-			
+		
 			distance += edgeCalc.calculate(current, root, JCLvars);
 			distance += edgeCalc.calculate(root, leaf, JCLvars);
 			path.append(root);
 			
-			double upperBound = (double) jcl.getValue("upperL").getCorrectResult();
+			Pair<String,Double> upperBound = (Pair<String,Double>) jcl.getValue("bestResultL").getCorrectResult();
 			
-			if(mom.prune(upperBound, distance)){
-				upperBound = (double) jcl.getValueLocking("upperL").getCorrectResult();
-				if(mom.prune(upperBound, distance)){
-					jcl.setValueUnlocking("pathL", path.toString());
-					jcl.setValueUnlocking("upperL", distance);	
+			if(!mom.prune(upperBound.getValue(), distance)){
+				upperBound = (Pair<String,Double>) jcl.getValueLocking("bestResultL").getCorrectResult();
+				if(!mom.prune(upperBound.getValue(), distance)){
+					/*jcl.setValueUnlocking("pathL", path.toString());
+					jcl.setValueUnlocking("upperL", distance);	*/
+					upperBound = new Pair<String,Double>(path.toString(),distance);
+					jcl.setValueUnlocking("bestResultL", upperBound);
 					
 					updateLocalGlobal(mom);
 					
 					System.out.println("partial result: " + distance + " " + path.toString());
 					
-				}else jcl.setValueUnlocking("upperL", upperBound);	
+				}else jcl.setValueUnlocking("bestResultL", upperBound);	
 			}			
 			
 		}		
 		
 	}	
-	protected void traverse2(JCL_facade jcl, PruningInterface[] instances, Object[] JCLvars, DeltaEvaluationInterface edgeCalc, int numOfVertices, ObjectSet<String> remaining, StringBuilder path, String root, String leaf, String current, float distance)
-	{/*
-		if(!remaining.isEmpty()) {
-			
-			for(String i:remaining) {
-				
-				//float Datual = distance + edgeCalc.calculate(current, i, JCLvars);
-				float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
-				boolean flag = true;
-				ObjectSet<String> remainingAux = new ObjectOpenHashSet<String>(remaining.size()-1);
-				for(String j:remaining){
-					if(!j.equals(i)){
-						remainingAux.add(j);
-					}	
-				}
-				//Object[] args = {JCLvars, numOfVertices, remainingAux, path, root, leaf, current, i, Datual, upperBound, edgeCalc};
-				for(PruningInterface x : instances) {
-					if(x!=null && flag) {
-						if(x.prune(args)) {
-							flag = false;
-							remainingAux.clear();
-							remainingAux = null;
-						}
-					}
-				}
-				if(flag) {
-					StringBuilder currentPath = new StringBuilder();
-					currentPath.append(path);
-					currentPath.append(i+":");
-					if(remainingAux!=null) {
-						//traverse2(jcl,instances,JCLvars,edgeCalc,numOfVertices,remainingAux,currentPath,root,leaf,i,Datual);
-					}
-					currentPath=null;
-					
-				}
-				if(remainingAux!=null){
-					remainingAux.clear();
-					remainingAux = null;
-				}
-				i=null;
-			}
-		}else {
-			distance += edgeCalc.calculate(current, root, JCLvars);
-			distance += edgeCalc.calculate(root, leaf, JCLvars);
-			path.append(root);
-			
-			float upperBound = (float) jcl.getValue("upperL").getCorrectResult();
-			
-			if(upperBound>distance){
-				upperBound = (float) jcl.getValueLocking("upperL").getCorrectResult();
-				if(upperBound>distance){
-					jcl.setValueUnlocking("pathL", path.toString());
-					jcl.setValueUnlocking("upperL", distance);	
-					
-					//updateLocalGlobal();
-					
-					System.out.println("partial result: " + distance + " " + path.toString());
-					
-				}else jcl.setValueUnlocking("upperL", upperBound);	
-			}			
-		}*/
-	}
 }
