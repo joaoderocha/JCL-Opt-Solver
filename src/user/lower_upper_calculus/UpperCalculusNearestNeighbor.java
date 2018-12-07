@@ -31,14 +31,7 @@ public class UpperCalculusNearestNeighbor implements UpperLowerCalculusInterface
 		}
 		
 		
-		for(Future<JCL_result> aux:tickets)
-			try {
-				aux.get();
-				jcl.removeResult(aux);
-			} catch (InterruptedException | ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		jcl.getAllResultBlocking(tickets);
 		
 		tickets.clear();
 		tickets = null;

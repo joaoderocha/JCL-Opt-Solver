@@ -20,7 +20,7 @@ public class TaskDecreaseUpperBound {
 		
 		sb.append(jth+":");
 		
-		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();
 		
 		@SuppressWarnings("unchecked")
 		ObjectSet<String> vertices = (ObjectSet<String>) jcl.getValue("vertices").getCorrectResult();
@@ -44,9 +44,9 @@ public class TaskDecreaseUpperBound {
 		if(!JCL_FacadeImpl.getInstanceLambari().containsGlobalVar("bestResultL")){
 			JCL_FacadeImpl.getInstanceLambari().instantiateGlobalVar("bestResultL",(Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult());
 		} else updateLocalGlobal(momprune);		
+		
 		JCL_facade jclLambari = JCL_FacadeImpl.getInstanceLambari();
-		
-		
+
 		traverse(jclLambari, instances, JCLvars, edgeCalc,momprune, vertices.size(), remaining, sb, ith, jth, jth, 0);
 		
 		sb=null;	
@@ -128,7 +128,20 @@ public class TaskDecreaseUpperBound {
 	}	
 	@SuppressWarnings("unchecked")
 	private void updateLocalGlobal(MinOrMaxPruneInterface edge){
-		JCL_facade jcl = JCL_FacadeImpl.getInstance();
+		JCL_facade jcl = JCL_FacadeImpl.getInstancePacu();	
+		Pair<String,Double> globalUpperBound = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult(); // valor global
+		Pair<String,Double> localUpperBound = (Pair<String,Double>) JCL_FacadeImpl.getInstanceLambari().getValue("bestResultL").getCorrectResult();// valor local
+		if(edge.prune(localUpperBound.getValue(), globalUpperBound.getValue())){ // valor local é menor que global || global desatualizado
+			globalUpperBound =  (Pair<String,Double>) jcl.getValueLocking("bestResult").getCorrectResult(); // travo valor global
+			if(edge.prune(localUpperBound.getValue(),globalUpperBound.getValue() )) { // valor local continua menor que global
+				jcl.setValueUnlocking("bestResult", localUpperBound); // se continua menor, libera valor global para local
+			}else jcl.setValueUnlocking("bestResult", globalUpperBound); // caso contrario , libera com valor global
+		}else if(edge.prune(globalUpperBound.getValue(), localUpperBound.getValue())) { // valor global e menor que local || Local desatualizado
+			localUpperBound =  (Pair<String,Double>) JCL_FacadeImpl.getInstanceLambari().getValueLocking("bestResultL").getCorrectResult(); // travo valor local
+			if(edge.prune(globalUpperBound.getValue(), localUpperBound.getValue())) { // valor global continua menor que o local
+				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",globalUpperBound); // libera local com valor global
+			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",localUpperBound); // libera local com valor local
+		}
 		/*double upperBound = (double) jcl.getValue("upper").getCorrectResult();
 		double localUpperBound = (double) JCL_FacadeImpl.getInstanceLambari().getValue("upperL").getCorrectResult();
 		if(!edge.prune(upperBound, localUpperBound)){
@@ -145,20 +158,6 @@ public class TaskDecreaseUpperBound {
 			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("upperL", localUpperBound);
 		}*/
 		
-		
-		Pair<String,Double> globalUpperBound = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult(); // valor global
-		Pair<String,Double> localUpperBound = (Pair<String,Double>) JCL_FacadeImpl.getInstanceLambari().getValue("bestResultL").getCorrectResult();// valor local
-		if(edge.prune(localUpperBound.getValue(), globalUpperBound.getValue())){ // valor local é menor que global || global desatualizado
-			globalUpperBound =  (Pair<String,Double>) jcl.getValueLocking("bestResult").getCorrectResult(); // travo valor global
-			if(edge.prune(localUpperBound.getValue(),globalUpperBound.getValue() )) { // valor local continua menor que global
-				jcl.setValueUnlocking("bestResult", localUpperBound); // se continua menor, libera valor global para local
-			}else jcl.setValueUnlocking("bestResult", globalUpperBound); // caso contrario , libera com valor global
-		}else if(edge.prune(globalUpperBound.getValue(), localUpperBound.getValue())) { // valor global e menor que local || Local desatualizado
-			localUpperBound =  (Pair<String,Double>) jcl.getValueLocking("bestResultL").getCorrectResult(); // travo valor local
-			if(edge.prune(globalUpperBound.getValue(), localUpperBound.getValue())) { // valor global continua menor que o local
-				JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",globalUpperBound); // libera local com valor global
-			}else JCL_FacadeImpl.getInstanceLambari().setValueUnlocking("bestResultL",localUpperBound); // libera local com valor local
-		}
 	}
 	
 	private Object loadInstance(String oneClass){

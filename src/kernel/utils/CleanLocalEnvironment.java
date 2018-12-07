@@ -1,6 +1,6 @@
 package kernel.utils;
 
-import implementations.sm_kernel.JCL_FacadeImpl;
+import implementations.dm_kernel.user.JCL_FacadeImpl;
 import interfaces.kernel.JCL_facade;
 
 public class CleanLocalEnvironment {
@@ -10,10 +10,10 @@ public class CleanLocalEnvironment {
 	}
 	
 	public void execute(){
-		JCL_facade jclLambari = JCL_FacadeImpl.getInstance();
+		JCL_facade jclLambari = JCL_FacadeImpl.getInstanceLambari();
 		
-		if(jclLambari.containsGlobalVar("upperL")){
-			System.err.println(jclLambari.deleteGlobalVar("upperL"));
+		if(jclLambari.containsGlobalVar("BestResultL")){
+			System.err.println(jclLambari.deleteGlobalVar("BestResultL"));
 		}
 		if(jclLambari.containsGlobalVar("lowerL")){
 			jclLambari.deleteGlobalVar("lowerL");

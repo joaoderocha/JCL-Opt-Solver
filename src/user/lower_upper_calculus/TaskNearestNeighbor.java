@@ -69,8 +69,10 @@ public class TaskNearestNeighbor{
 		}else{
 			distance += edgeCalc.calculate(current, vertex, JCLvars);
 			Pair<String,Double> best = (Pair<String,Double>) JCL_FacadeImpl.getInstance().getValue("bestResult").getCorrectResult();
+			System.out.println(Thread.currentThread().getName()+" bestR: " + best.getValue());
 			double bestDistance = best.getValue();//(double) JCL_FacadeImpl.getInstance().getValue("upper").getCorrectResult();
 			if(bestDistance>distance){
+				
 				best = (Pair<String,Double>) JCL_FacadeImpl.getInstance().getValueLocking("bestResult").getCorrectResult();
 				bestDistance = best.getValue();//(double) JCL_FacadeImpl.getInstance().getValueLocking("upper").getCorrectResult();
 				if(bestDistance>distance){
