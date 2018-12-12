@@ -1,5 +1,8 @@
 package kernel.mode;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +32,7 @@ public class BtMultipleBranchParallelism implements KernelMode{
 		/*
 		 * Load input
 		 */
+		
 		long time = System.nanoTime();
 		LoadInterface mountDistances = (LoadInterface)LoadClass.loadInstance("load");
 		mountDistances.load("input.txt");
@@ -100,7 +104,7 @@ public class BtMultipleBranchParallelism implements KernelMode{
 			for(String j:vertices){ 
 				
 				if(!j.equals(i) && !restrictions.contains(j)){	
-					
+						
 						Object[] args = {i,j, pruning, edge,mom, jclVars};
 						// startar thread para debug
 						tickets.add(jcl.execute(nickName[nickName.length-1], args));			

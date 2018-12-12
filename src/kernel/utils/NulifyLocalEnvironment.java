@@ -17,6 +17,6 @@ public class NulifyLocalEnvironment {
 			Pair<String,Double> x = new Pair<String,Double>("",Double.MAX_VALUE);
 			System.err.println(jclLambari.setValueUnlocking("bestResultL", x));
 		}
-		System.out.println("done");
+		
 	}
 }

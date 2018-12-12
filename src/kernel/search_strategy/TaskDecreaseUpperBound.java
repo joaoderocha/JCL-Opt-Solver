@@ -33,6 +33,7 @@ public class TaskDecreaseUpperBound {
 				remaining.add(i);				
 			}
 		}	
+		
 		DeltaEvaluationInterface edgeCalc = (DeltaEvaluationInterface) loadInstance(edge);
 		MinOrMaxPruneInterface momprune = (MinOrMaxPruneInterface) loadInstance(mom);
 		PruningInterface[] instances = new PruningInterface[classes.length];

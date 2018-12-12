@@ -19,7 +19,7 @@ import kernel.utils.NulifyLocalEnvironment;
 import user.load_input.LoadInterface;
 import user.lower_upper_calculus.UpperLowerCalculusInterface;
 
-public class BtMultipleBranchBinarySearch implements KernelMode {
+public class BtMultipleBranchBinarySearchUpLw implements KernelMode {
 
 	@Override
 	public void execute() {
@@ -40,9 +40,10 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 		upperLowerCalculus.execute();
 		Pair<String,Double> bestResult = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
 		Pair<String,Double> aux = null;
+		double lowerMain=(double)jcl.getValue("lower").getCorrectResult();
 		System.out.println("Finished to find a valid graph path to be used as upper and lower bounds");
 		System.out.println("upper bound: " + bestResult.getValue());
-		System.out.println("lower bound: " + jcl.getValue("lower").getCorrectResult());
+		System.out.println("lower bound: " + lowerMain);
 		System.out.println("path: "+ bestResult.getKey());
 		System.out.println("end of upper/lower bound values calculus... ");
 		
@@ -56,30 +57,84 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 		String mom = LoadClass.loadString("minormax");
 		String jclVars = LoadClass.loadString("vars");
 		System.out.println("Distributing arguments...");
-		
-		
+		double pivot1 = 0;
+		double pivot2 = 0;
+		double lowerAux = 0;
 		Object[] args = null;
 		int runs =1;
 		
-		double upperAux = bestResult.getValue();
+		double upperMain = bestResult.getValue();
+		double upperAux =0;
 		
 		while((double) jcl.getValue("lower").getCorrectResult()<=((Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult()).getValue()){
 			System.out.println("Binary search strategy - round: " + runs);
 			if (runs==1){
-				double lowerAux = (double) jcl.getValue("lower").getCorrectResult();
-				double pivot = (upperAux+lowerAux)/2;
-				aux = new Pair<String,Double>("",pivot);
+				
+				pivot2 = (upperMain+lowerMain)/2;
+				pivot1 = (pivot2+lowerMain)/2;
+				aux = new Pair<String,Double>("",pivot2);
+				jcl.setValueUnlocking("lower", pivot1);
 				jcl.setValueUnlocking("bestResult", aux);
-				System.out.println("Begin search from lowerBound: "+lowerAux+" to UpperBound:"+pivot);
+				System.out.println("Begin search from lowerBound: "+pivot1+" to UpperBound:"+pivot2);
 				jcl.register(LoadClass.loadClass("searchstrategy"), nickName[nickName.length-1]);
 				traverse(vertices, pruning, edge,mom, jclVars, tickets, nickName, jcl);
 				aux = null;
 				aux = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
-				if(pivot==aux.getValue()){ 
-					jcl.setValueUnlocking("lower", pivot);
+				if(pivot2==aux.getValue()){
+					lowerAux = pivot2;
+					upperAux = upperMain;
+					
+					pivot2 = (lowerAux+upperAux)/2;
+					pivot1 = (lowerAux+pivot2)/2;
+					
 					aux = null;
-					aux = new Pair<String,Double>("",(upperAux+pivot)/2);
+					aux = new Pair<String,Double>("",pivot2);
 					jcl.setValueUnlocking("bestResult", aux);
+					jcl.setValueUnlocking("lower", pivot1);
+					
+					jcl.register(NulifyLocalEnvironment.class, "NulifyLocalEnvironment");
+					tickets = jcl.executeAll("NulifyLocalEnvironment", args);
+					jcl.getAllResultBlocking(tickets);
+					
+					tickets.clear();
+				}else {
+					bestResult = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
+					upperAux = pivot1;
+					lowerAux = lowerMain;
+					pivot2 = (lowerAux + upperAux)/2;
+					pivot1 = (lowerAux+pivot2)/2;
+					
+					aux = null;
+					aux = new Pair<String,Double>("",pivot2);
+					jcl.setValueUnlocking("bestResult", aux);
+					jcl.setValueUnlocking("lower", pivot1);
+					
+					jcl.register(NulifyLocalEnvironment.class, "NulifyLocalEnvironment");
+					tickets = jcl.executeAll("NulifyLocalEnvironment", args);
+					jcl.getAllResultBlocking(tickets);
+					
+					tickets.clear();
+				}
+			}else{
+				jcl.register(LoadClass.loadClass("searchstrategy"), nickName[nickName.length-1]);
+				System.out.println("Begin search from lowerBound: "+pivot1+" to UpperBound:"+pivot2);
+				traverse(vertices, pruning, edge,mom, jclVars, tickets, nickName, jcl);
+				
+				aux = null;
+				aux = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
+				if(pivot2==aux.getValue()){ 
+					lowerAux = pivot2;
+					pivot2 = (lowerAux + upperAux)/2;
+					pivot1 = (lowerAux+pivot2)/2; 
+					
+					if(Math.abs(pivot1 - pivot2) < 10) {
+						pivot1 = pivot1+1;
+					}
+					
+					aux = null;
+					aux = new Pair<String,Double>("",pivot2);
+					jcl.setValueUnlocking("bestResult", aux);
+					jcl.setValueUnlocking("lower", pivot1);
 					
 					
 					jcl.register(NulifyLocalEnvironment.class, "NulifyLocalEnvironment");
@@ -87,32 +142,20 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 					jcl.getAllResultBlocking(tickets);
 					
 					tickets.clear();
-				}else break;
-			}else{
-				
-				double pivot = ((Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult()).getValue();
-				double lowerAux = (double) jcl.getValue("lower").getCorrectResult();
-				System.out.println("Begin search from lowerBound: "+lowerAux+" to UpperBound:"+pivot);
-				jcl.register(LoadClass.loadClass("searchstrategy"), nickName[nickName.length-1]);
-				traverse(vertices, pruning, edge,mom, jclVars, tickets, nickName, jcl);
-				aux = null;
-				aux = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
-				System.out.println(pivot +" aux: "+ aux.getValue());
-				if(pivot==aux.getValue()){ 
-					if(Math.abs(pivot - ((upperAux+pivot)/2)) < 1) {
-						jcl.setValueUnlocking("lower", pivot);
-						aux = null;
-						aux = new Pair<String,Double>("",pivot+1);
-						jcl.setValueUnlocking("bestValue", aux);
-					}else {
-						jcl.setValueUnlocking("lower", pivot);
-						aux = null;
-						aux = new Pair<String,Double>("",(upperAux+pivot)/2);
-						jcl.setValueUnlocking("bestResult", aux);
+				}else {
+					upperAux = pivot1;
+					pivot2 = (lowerAux + upperAux)/2;
+					pivot1 = (lowerAux+pivot2)/2; 
+					
+					if(Math.abs(pivot1 - pivot2) < 10) {
+						pivot1 = pivot1+10;
 					}
 					
 					
-								
+					aux = null;
+					aux = new Pair<String,Double>("",pivot2);
+					jcl.setValueUnlocking("bestResult", aux);
+					jcl.setValueUnlocking("lower", pivot1);
 					
 					
 					jcl.register(NulifyLocalEnvironment.class, "NulifyLocalEnvironment");
@@ -120,18 +163,14 @@ public class BtMultipleBranchBinarySearch implements KernelMode {
 					jcl.getAllResultBlocking(tickets);
 					
 					tickets.clear();
-				}else break;
+				}
 			}
-			System.out.println((double) jcl.getValue("lower").getCorrectResult());
-			System.out.println(((Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult()).getValue());
 			runs++;
 		}	
 		
 		tickets = null;
 		vertices = null;
 		aux = (Pair<String,Double>) jcl.getValue("bestResult").getCorrectResult();
-		System.out.println(aux.getValue());
-		System.out.println(bestResult.getValue());
 		if(!aux.getKey().equals(""))
 			bestResult = aux;
 		aux = null;
